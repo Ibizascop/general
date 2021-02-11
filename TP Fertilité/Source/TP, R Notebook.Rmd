@@ -1,0 +1,277 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Importation des donnes et des librairies
+```{r}
+data = read.table("fertility_Diagnosis.txt",sep=",")
+
+library(factoextra)
+library(caret)
+library(lime)
+library(rpart)
+library(cluster)
+library(rpart.plot)
+library(psych)
+
+```
+
+On nomme les variables pour plus de clarté
+```{r}
+names(data)[1] <- "Season"
+names(data)[2] <- "Age"
+names(data)[3] <- "Childish Diseases"
+names(data)[4] <- "Accident or Serious Trauma"
+names(data)[5] <- "Surgical Intervention"
+names(data)[6] <- "High Fevers"
+names(data)[7] <- "Alchool Consumption"
+names(data)[8] <- "Smoking Habit"
+names(data)[9] <- "Nb hours sitting per day"
+names(data)[10] <- "Diagnosis"
+
+```
+
+On visualise les nuages de points
+```{r}
+plot(data)
+
+```
+
+On Transforme la colonne "Diagnosis" en numérique pour histogrammes, correlations ...
+```{r}
+data_2 = data
+code = function(x) {
+  if (x == "N") 
+    return (1)
+  if (x == "O") 
+    return (2)
+}
+data_2$Diagnosis_codé = apply(data_2[,c("Diagnosis"),drop = F],1,code)
+data_2 = data_2[-c(10)]
+```
+
+On calcule les corrélations 
+```{r}
+cor(data_2)
+```
+
+
+Histogrammes
+```{r}
+hist(data$Season)
+hist(data$Age)
+hist(data$`Childish Diseases`)
+hist(data$`Accident or Serious Trauma`)
+hist(data$`Surgical Intervention`)
+hist(data$`High Fevers`)
+hist(data$`Alchool Consumption`)
+hist(data$`Smoking Habit`)
+hist(data$`Nb hours sitting per day`)
+hist(data_2$Diagnosis_codé)
+```
+Boxplots
+```{r}
+boxplot(split(data$Season,data$Diagnosis), main="Season")
+boxplot(split(data$Age,data$Diagnosis), main="Age")
+boxplot(split(data$`Childish Diseases`,data$Diagnosis), main="Childish Diseases")
+boxplot(split(data$`Accident or Serious Trauma`,data$Diagnosis), main="Accident or Serious Trauma")
+boxplot(split(data$`Surgical Intervention`, data$Diagnosis), main="Surgical Intervention")
+boxplot(split(data$`High Fevers`,data$Diagnosis), main="High Fevers")
+boxplot(split(data$`Alchool Consumption`,data$Diagnosis), main="Alchool Consumption")
+boxplot(split(data$`Smoking Habit`,data$Diagnosis), main="Smoking Habit")
+boxplot(split(data$`Nb hours sitting per day`,data$Diagnosis), main="Nb hours sitting per day")
+
+```
+Classification supervisée, on enlève la variable à prédire
+```{r}
+data_4 = data[-c(10)]
+```
+
+K-means, détermination du bon nombre de classes par la méthode du
+```{r}
+Sommes_carrés=c()
+for (i in 2:20) {
+  K_means <- kmeans(data_4,i)
+  Sommes_carrés[i-1] = K_means$tot.withinss
+}
+
+plot(2:20,Sommes_carrés,type='o',xlab ='Nb de classes',ylab='Sommes carrées intraclasses',main="Kmeans Nb de classes optimal")
+abline(v = 4,col="blue")
+```
+K-means final avec 4 classes, visualisation
+```{r}
+K_means_final = kmeans(data_4,4)
+print(K_means_final)
+fviz_cluster(K_means_final, data_4, ellipse.type = "norm")
+```
+PAM, détermination du nombre de classes avec la valeur silhouette
+```{r}
+Silhouette_PAM =c()
+for (i in 2:20) {
+  PAM = pam(data_4,i)
+  Silhouette_PAM[i-1] = PAM$silinfo$avg.width
+}
+plot(2:20,Silhouette_PAM,type='o',xlab ='Nb de classes',ylab='Valeur silhouette globale',main="Nb de classes optimal pour le PAM")
+
+```
+PAM final avec 5 classes, visualisation
+```{r}
+PAM_final = pam(data_4,5)
+PAM_final
+fviz_silhouette(PAM_final, label=TRUE)
+```
+
+CAH
+```{r}
+CAH_Agglo = agnes(x = data_4, 
+                  stand = TRUE, 
+                  metric = "euclidean",
+                  method = "ward")
+CAH_Agglo$ac #Mesurer la qualité du clustering, similaire à la silhouette
+```
+Détermination de la meilleure partition
+```{r}
+inertie <- sort(CAH_Agglo$height, decreasing = TRUE)
+plot(inertie[1:20], type = "s", xlab = "Nombre de classes", ylab = "Inertie")
+points(c(2, 3), inertie[c(2, 3)], col = c("green3", "red3"), cex = 2, lwd = 3)
+```
+Détermination des 2 meilleures partitions
+```{r}
+fviz_dend(CAH_Agglo, cex = 0.8,k=2,main = paste("Agglomerative Cluster Dendrogram","Quality=",round(CAH_Agglo$ac,4)), 
+          xlab = "",
+          ylab = "Height",
+          color_labels_by_k = TRUE,
+          rect = TRUE,
+          rect_border = "black"
+           )
+
+fviz_dend(CAH_Agglo, cex = 0.8,k=3,main = paste("Agglomerative Cluster Dendrogram","Quality=",round(CAH_Agglo$ac,4)), 
+          xlab = "",
+          ylab = "Height",
+          color_labels_by_k = TRUE,
+          rect = TRUE,
+          rect_border = "black"
+)
+
+```
+Classification supervisée, division entrainement test
+```{r}
+division = sample(nrow(data), 0.6*nrow(data), replace = FALSE)
+TrainSet = data[division,]
+ValidSet = data[-division,]
+```
+
+Arbre de classification
+```{r}
+arbre <- rpart(data$Diagnosis~ ., data=data,subset = division, control = rpart.control("minsplit" = 1), xval = 30)
+               
+arbre
+plot(arbre)
+text(arbre)
+tab = table(predict(arbre, data[-division,], type="class"), data[-division,"Diagnosis"]) 
+(tab[1]+tab[4])/sum(tab)
+```
+Bootstrap
+```{r}
+précision_boot = matrix(0,nrow=100,ncol=1)
+précision_max = 0
+for (i in 1:100) {
+  division_boot = sample(nrow(data), 0.6*nrow(data), replace = FALSE)
+  TrainSet_boot = data[division_boot,]
+  ValidSet_boot = data[-division_boot,]
+  arbre_boot <- rpart(data$Diagnosis~ ., data=data,subset = division_boot, control = rpart.control("minsplit" = 1), xval = 30)
+  tab_boot = table(predict(arbre_boot, data[-division_boot,], type="class"), data[-division_boot,"Diagnosis"]) 
+  précision_boot[i] = (tab_boot[1]+tab_boot[4])/sum(tab_boot)
+  
+  if (précision_boot[i] > précision_max) {
+    précision_max = précision_boot[i]
+    arbre_final = arbre_boot
+    check = i 
+  }
+}
+```
+
+Récupérer le meilleure arbre
+```{r}
+arbre_final
+tab_final = table(predict(arbre_final, data[-division_boot,], type="class"), data[-division_boot,"Diagnosis"]) 
+tab_final
+(tab_final[1]+tab_final[4])/sum(tab_final)
+#Visualisation simple
+plot(arbre_final)
+text(arbre_final)
+```
+Visualisation avancée de l'arbre
+```{r}
+rpart.plot(arbre_final,tweak=1.6,extra=101)
+
+```
+Moyenne et variance du bootstrap
+```{r}
+hist(précision_boot,xlab="Précision des arbres",main=paste("Précision moyenne =",
+                                                           round(mean(précision_boot),4),",",
+                                                         "Variance",round(var(précision_boot),4)))
+
+```
+Random Forest
+```{r}
+set.seed(22)
+division_rf = sample(nrow(data), 0.6*nrow(data), replace = FALSE)
+TrainSet_rf = data[division_rf,]
+ValidSet_rf = data[-division_rf,]
+```
+
+GridSearch
+```{r}
+tgrid <- expand.grid(
+  .mtry = 2:9,
+  .splitrule = "gini",
+  .min.node.size = 2:10)
+```
+
+Création d'un modèle RF
+```{r}
+rf = train(Diagnosis  ~ ., data = TrainSet_rf,
+           method = "ranger",
+           trControl = trainControl(method="cv", number = 10, verboseIter = T, classProbs = T),
+           tuneGrid = tgrid,
+           num.trees = 100,
+           importance = "impurity")
+
+```
+Test sur jeu d'entrainement
+```{r}
+predTrain <- predict(rf, TrainSet_rf)
+mean(predTrain == TrainSet_rf$Diagnosis)    
+table(predTrain, TrainSet_rf$Diagnosis)
+```
+Essai sur jeu de Test
+```{r}
+predValid <- predict(rf, ValidSet_rf)
+mean(predValid == ValidSet_rf$Diagnosis)                    
+table(predValid,ValidSet_rf$Diagnosis)
+
+```
+Suppression de la variable à prédire pour LIME
+```{r}
+train_x <- dplyr::select(TrainSet_rf, -Diagnosis)
+test_x <- dplyr::select(ValidSet_rf, -Diagnosis)
+
+train_y <- dplyr::select(TrainSet_rf, Diagnosis)
+test_y <- dplyr::select(ValidSet_rf, Diagnosis)
+
+```
+
+Création explainer object
+```{r}
+explainer <- lime(train_x, rf, n_bins = 5, quantile_bins = TRUE)
+explanation_rf <- lime::explain(test_x, explainer, n_labels = 1, n_features = 9, n_permutations = 1000, feature_select = "forward_selection")
+```
+Visualisation de l'interprétation du Random Forest
+```{r}
+plot_features(explanation_rf[101:132, ], ncol = 1)
+#Executer commande séparément pour obtenir le graphique dans la fenêtre classique et zoomer"
+#Regarder l'objet explanation_rf et choisir comme valeurs de lignes les index des case que l'on veut étudier. Exemple, lignes 101 à 132 = individus 27, 28,36 et 37
+```
+
