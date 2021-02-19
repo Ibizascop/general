@@ -1,0 +1,140 @@
+---
+title: "Clustering Notebook"
+output: html_notebook
+---
+
+On charge d'abord toute les librairies 
+```{r}
+library(dplyr,quietly = TRUE)
+library(tidyverse,quietly = TRUE)
+# hdf5 file manipulation
+library(rhdf5)
+library(viridis)
+library(ggplot2,quietly = TRUE)
+library(reshape2,quietly = TRUE)
+library(viridis,quietly = TRUE)
+library(data.table,quietly = TRUE)
+library(xtable,quietly = TRUE)
+library(knitr)
+library(markdown)
+library(stringr)
+library(cowplot)
+library(patchwork)
+library(pacman)
+library("rio")
+p_load(dtwclust)
+p_load(heatmaply)
+p_load(rio)
+p_load(dbscan)
+p_load(cluster)
+p_load(ggpubr)
+p_load(factoextra)
+setwd("~/Bureau/inria_data/energy_data_repo")
+
+```
+
+
+On télécharge les données puis on on construit la matrice de dissimilarité en utilisant la métrique SBD (voir Readme) 
+
+```{r}
+
+nb_files <- 797  #put number of element (equivalent to os.list.dir in python)
+nb_clusters <- 18
+
+
+
+matrix <- matrix(0L, nrow = nb_files, ncol = nb_files)
+
+mem <- vector(mode = "list", length = nb_files)
+
+for (i in 1:nb_files) {
+  ith_ts <- import(gsub(" ", "", paste(i, ".csv")))
+  mem[[i]] <- (ith_ts$x)
+  j<-1
+  #print(paste((i/nb_files)*100,"%"))
+  #flush.console()
+  if (i > 1 ){
+    for (vec in mem){
+      if (is.null(vec) == F){
+        
+        matrix[j,i] = SBD(x=ith_ts$x,y=vec,znorm=F,error.check = T)$dist
+        matrix[i,j] = matrix[j,i]
+        j=j+1
+      }
+    }
+  }
+}
+```
+
+On transforme la matrice en matrice de dissimilarité et on la visualise
+
+```{r}
+
+old_matrix = matrix
+#save(matrix,file="similarity_matrix.RData") 
+matrix <- as.dist(matrix) 
+
+#load( file="similarity_matrix.RData" )
+
+fviz_dist(matrix,gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+```
+
+On applique le clustering hierarchique avec la méthode souhaité puis on trace le résultats
+
+```{r}
+hclu=hclust(matrix, method = "average", members = NULL)
+
+plot(hclu)
+
+```
+On affiche la dissimilarité en fonction du nombre de classe
+
+```{r}
+h <- sort(hclu$height, decreasing = TRUE)
+plot(h[1:as.integer(nb_files/10)], type = "s", xlab = "Nombre de classes", ylab = "Diss")
+```
+on coupe le dendrogram à la hauteur souhaité pour avoir le bon nombre de classes
+
+```{r}
+clusters_h <- cutree(hclu,nb_clusters)
+plot(clusters_h,c(1:nb_files))
+text(clusters_h, c(1:nb_files), labels=c(1:nb_files), cex= 0.7,col="red",pos=2)
+
+```
+On test l'algorithme PAM pour le cluster 
+```{r}
+clusters <- pam(matrix, nb_clusters,cluster.only = T)
+summary(clusters)
+plot(clusters)
+
+```
+On extrait les centroids de chaque cluster
+```{r}
+
+counter <- 1
+clusters_list <- list()
+freq <-vector(mode = "list", length = nb_clusters)
+summary <- list()
+for (i in 1:nb_clusters){
+  print(paste((i/nb_clusters)*100,"%"))
+  for (j in 1:nb_files){
+    if ((clusters == i)[j]){
+      ith_ts <- import(gsub(" ", "", paste(j, ".csv")))
+      clusters_list[[counter]] <-ith_ts$x
+    }
+  }
+  freq[[i]] = sum((clusters == i))
+  centroid = shape_extraction(clusters_list,znorm=F)
+  plot(centroid,type="lines",main =paste("Class n°",i ," with",sum((clusters == i)),"elements"))
+  #export(centroid,gsub(" ", "", paste("centroid_class_",i, ".csv")))
+  num <- gsub(" ", "", paste("class_19_",i, ".png"))
+  png(file=gsub(" ","",paste("centroids/",num)), width=600, height=350)
+  plot(centroid,type="lines",main =paste("Class n°",i ," with",sum((clusters == i)),"elements"))
+  dev.off()
+  write.csv(centroid, file =paste("centroid_class_",i, ".csv"), row.names=FALSE)
+}
+
+```
+
+
+
