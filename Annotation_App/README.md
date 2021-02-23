@@ -10,13 +10,13 @@ Objectifs proposer une application permettant de labeliser facilement des images
  
 Le programme prend en paramètres un dossier contenant des images au format png ou jpeg et (optionnel) un fichier csv/txt ce qui permet de continuer une labelisation déjà commencée. La labelisation se fait de façon binaire, si un "tag" est présent pour une image, on meet une valeur de 1, 0 sinon.
 
-Les images sont affichées à l'écran 1 par 1, on peut utiliser les boutons "Previous Image" et "Next Image" pour reculer et avancer dans la liste d'images. Dans le menu déroulant en haut à gauche, des boutons permettent d'afficher le dataframe contenant les données de la session de labelisation en cours. Le bouton "Go to image" permet de passer à l'image dont l'index est celui renseigné dans la zone "Already Treated image nulmber to go". 
+Les images sont affichées à l'écran 1 par 1, on peut utiliser les boutons "Previous Image" et "Next Image" pour reculer et avancer dans la liste d'images. Dans le menu déroulant en haut à gauche, des boutons permettent d'afficher le dataframe contenant les données de la session de labelisation en cours. 
 
  ![Screenshot](Explications/3.png)
  
   ![Screenshot](Explications/5.png)
  
- et de se rendre à une image particulière et de sauvegarder en csv et/ou json. En csv, on obtient un dataframe contenant en lignes les images et en colonnes le nom des images (chemin d'accès), la note des images et l'ensemble des tags. Pour chaque image et chaque tag, on a 0 si l'image ne contient pas le tag, 1 si elle le contient. En json, on ne stocke que les tags possédés pour une image.
+Le bouton "Go to image" permet de passer à l'image dont l'index est celui renseigné dans la zone "Already Treated image nulmber to go".  Le bouton "Go to image" permet de passer à l'image dont l'index est celui renseigné dans la zone "Already Treated image nulmber to go". et de se rendre à une image particulière et de sauvegarder en csv et/ou json. En csv, on obtient un dataframe contenant en lignes les images et en colonnes le nom des images (chemin d'accès), la note des images et l'ensemble des tags. Pour chaque image et chaque tag, on a 0 si l'image ne contient pas le tag, 1 si elle le contient. En json, on ne stocke que les tags possédés pour une image.
 
  
 2.Ajouter des tags et noter les images
