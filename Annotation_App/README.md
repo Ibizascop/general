@@ -48,9 +48,11 @@ Il est possible de modifier à posteriori les tags des images mais pas les notes
 
 4.Utilisation
 
-Se placer au niveau du dossier et utiliser la commande suivante (nécessite Streamlit, Pandas,:
+Se placer au niveau du dossier et utiliser la commande suivante (nécessite Streamlit, Pandas, et PIL) :
 
 streamlit run Annotation.py -- "Chemin du dossier d'images" "Chemin du csv contenant un précédent travail si existant"
+
+Un dossier contenant des images d'exemples ainsi que le résultat sous format csv et json sont présents
 
 5.Remerciements
 
