@@ -1,0 +1,11 @@
+,Nom.du.fichier,Notes,Montagnes,Route,Désert,Ciel_Bleu,Nuages,Plage,Arbres,Palmiers,Mer,Soleil,Forêt,Lacs,Glaciers,Ciel_Gris,Batiments,Village,Champs,Rochers,Rivière,Buissons,Montagnes_Enneigées,Fleurs
+0,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_1.jpg,5.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+1,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_10.jpg,1.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+2,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_2.jpg,4.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+3,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_3.jpg,5.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+4,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_4.jpg,4.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0
+5,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_5.jpg,3.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0
+6,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_6.jpg,5.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0
+7,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_7.jpg,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0
+8,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_8.jpg,5.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0
+9,C:\Users\ibiza\OneDrive\Desktop\1\Images\Image_9.jpg,2.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0
